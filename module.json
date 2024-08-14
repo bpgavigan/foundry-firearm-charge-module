@@ -1,0 +1,21 @@
+{
+    "name": "firearm-charge-management",
+    "title": "Firearm Charge Management",
+    "description": "Handles firearm charge management and reloading in Foundry VTT.",
+    "author": "Dustnite",
+    "version": "1.0.0",
+    "minimumCoreVersion": "0.8.0",
+    "compatibleCoreVersion": "10",
+    "scripts": [
+      "scripts/firearmChargeManagement.js"
+    ],
+    "esmodules": [],
+    "styles": [],
+    "packs": [],
+    "languages": [],
+    "url": "",
+    "manifest": "",
+    "download": "",
+    "license": ""
+  }
+  
