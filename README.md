@@ -16,7 +16,7 @@ This Foundry VTT module provides automatic charge management for firearms within
 1. **Using Manifest URL:**
    - To install the module in Foundry VTT, use the following manifest URL:
      ```
-     https://yourusername.github.io/foundry-firearm-charge-module/module.json
+     https://dustnite.github.io/foundry-firearm-charge-module/module.json
      ```
 
 2. **Manual Installation:**
