@@ -2,21 +2,22 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const item = workflow.item;
     const actor = item.actor;
 
-    // Check if this is the specific firearm item
-    if (item.name !== "RHC Basic Issue Pistol") return true;
+    // Check if the item has the firearm management flag set
+    const isFirearm = item.getFlag("firearm-charge-management", "isFirearm");
+    if (!isFirearm) return true;
 
-    // Get the current charges
+    // Get the current charges (ammo/uses)
     let currentCharges = item.system.uses.value;
 
-    // If no charges are left, prompt to reload and prevent the item roll
+    // If no charges are left, prompt the user to reload and prevent the item roll
     if (currentCharges <= 0) {
         await showReloadDialog(actor, item);
         return false;  // Prevent the item roll
     }
 
-    // Otherwise, decrement the charge and allow the item roll to proceed
+    // Decrement the charge by 1 and allow the item roll to proceed
     await item.update({ "system.uses.value": currentCharges - 1 });
-    return true;  // Allow the item roll
+    return true;  // Allow the item roll to proceed
 });
 
 // Function to display reload dialog
@@ -29,6 +30,7 @@ async function showReloadDialog(actor, item) {
                 yes: {
                     label: "Yes, Reload",
                     callback: async () => {
+                        // Reset the ammo to maximum charges
                         await item.update({ "system.uses.value": item.system.uses.max });
                         ui.notifications.info(`${actor.name} has reloaded their ${item.name}.`);
                         postReloadMessage(actor, item, true);
