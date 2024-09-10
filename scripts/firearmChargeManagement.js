@@ -1,13 +1,18 @@
-// Hook that triggers when an item is added to an actor's inventory
-Hooks.on("preCreateItem", async (item, options, userId) => {
+// Hook to automatically set the firearm flag when the item is created in an actor's inventory
+Hooks.on("createItem", async (item, options, userId) => {
+    const actor = item.actor;
+
+    // Ensure the item and actor exist
+    if (!actor || !item) return;
+
     // Check if the item being created is the "RHC Basic Issue Pistol"
     if (item.name === "RHC Basic Issue Pistol") {
-        console.log(`Adding flag to ${item.name}...`);
+        console.log(`Setting firearm flag for ${item.name} on actor ${actor.name}`);
 
         // Set the firearm-charge-management flag for the item
         await item.setFlag("firearm-charge-management", "isFirearm", true);
-        
-        console.log(`${item.name} flagged as a firearm`);
+
+        console.log(`${item.name} flagged as a firearm for actor ${actor.name}`);
     }
 });
 
