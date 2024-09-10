@@ -1,3 +1,17 @@
+// Hook that triggers when an item is added to an actor's inventory
+Hooks.on("preCreateItem", async (item, options, userId) => {
+    // Check if the item being created is the "RHC Basic Issue Pistol"
+    if (item.name === "RHC Basic Issue Pistol") {
+        console.log(`Adding flag to ${item.name}...`);
+
+        // Set the firearm-charge-management flag for the item
+        await item.setFlag("firearm-charge-management", "isFirearm", true);
+        
+        console.log(`${item.name} flagged as a firearm`);
+    }
+});
+
+// Firearm charge management logic
 Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const item = workflow.item;
     const actor = item.actor;
