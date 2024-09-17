@@ -38,15 +38,24 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const isFirearm = item.getFlag("firearm-charge-management", "isFirearm");
     if (!isFirearm) return true;
 
+    // Debug: Log weapon details and the roll state
+    console.log(`Firing ${item.name} by ${actor.name}.`);
+    console.log("Roll Information: ", workflow.attackRoll);
+    console.log("Advantage: ", workflow.advantage, " Disadvantage: ", workflow.disadvantage);
+
     // Check for magical firearms, which never misfire
     const isMagical = item.rarity === "magical";
-    if (isMagical) return true;  // Skip misfire mechanics for magical firearms
+    if (isMagical) {
+        console.log(`${item.name} is magical, skipping misfire checks.`);
+        return true;  // Skip misfire mechanics for magical firearms
+    }
 
     // Get the current charges (ammo/uses)
     let currentCharges = item.system.uses?.value || 0;
 
     // If no charges are left, prompt the user to reload and prevent the item roll
     if (currentCharges <= 0) {
+        console.log(`${item.name} is out of charges, prompting reload.`);
         await showReloadDialog(actor, item);
         return false;  // Prevent the item roll
     }
@@ -58,6 +67,7 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     if (roll.total === 1) {
         if (hasDisadvantage) {
             // If the attack was made with disadvantage and rolled a 1, the barrel cracks
+            console.log(`${item.name} misfired with disadvantage. Barrel cracked.`);
             ui.notifications.error(`${item.name} has misfired and the barrel has cracked! It is unusable until repaired.`);
             await item.update({ "system.equipped": false }); // Unequip the item
             ChatMessage.create({
@@ -66,6 +76,7 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
             });
         } else {
             // If no disadvantage, it's a regular misfire and needs to be cleared
+            console.log(`${item.name} misfired. Barrel needs clearing.`);
             ui.notifications.warn(`${item.name} misfired! Use an action to clear the barrel with a gun kit.`);
             await item.update({ "system.uses.value": currentCharges - 1 }); // Decrement ammo as the shot is consumed
             ChatMessage.create({
@@ -77,6 +88,7 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     }
 
     // Decrement the charge by 1 and allow the item roll to proceed
+    console.log(`Firing successful. ${item.name} now has ${currentCharges - 1} charges left.`);
     await item.update({ "system.uses.value": currentCharges - 1 });
     return true;  // Allow the item roll to proceed
 });
