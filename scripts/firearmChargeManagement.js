@@ -43,7 +43,7 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     if (isMagical) return true;  // Skip misfire mechanics for magical firearms
 
     // Get the current charges (ammo/uses)
-    let currentCharges = item.system.uses.value;
+    let currentCharges = item.system.uses?.value || 0;
 
     // If no charges are left, prompt the user to reload and prevent the item roll
     if (currentCharges <= 0) {
