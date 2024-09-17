@@ -5,8 +5,21 @@ Hooks.on("createItem", async (item, options, userId) => {
     // Ensure the item and actor exist
     if (!actor || !item) return;
 
-    // Check if the item being created is the "RHC Basic Issue Pistol"
-    if (item.name === "RHC Basic Issue Pistol") {
+    // List of muzzle-loading firearms that should trigger the flag
+    const muzzleLoaders = [
+        "RHC Basic Issue Pistol", 
+        "Carbine", 
+        "Musket", 
+        "Pistol", 
+        "Rifled Carbine", 
+        "Rifled Musket", 
+        "Shotgun", 
+        "Target Pistol", 
+        "Pistol, Poorly Made"
+    ];
+
+    // Check if the item being created is one of the muzzle-loading firearms
+    if (muzzleLoaders.includes(item.name)) {
         console.log(`Setting firearm flag for ${item.name} on actor ${actor.name}`);
 
         // Set the firearm-charge-management flag for the item
@@ -16,7 +29,7 @@ Hooks.on("createItem", async (item, options, userId) => {
     }
 });
 
-// Firearm charge management logic
+// Firearm charge management and misfire logic
 Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const item = workflow.item;
     const actor = item.actor;
@@ -25,6 +38,10 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const isFirearm = item.getFlag("firearm-charge-management", "isFirearm");
     if (!isFirearm) return true;
 
+    // Check for magical firearms, which never misfire
+    const isMagical = item.rarity === "magical";
+    if (isMagical) return true;  // Skip misfire mechanics for magical firearms
+
     // Get the current charges (ammo/uses)
     let currentCharges = item.system.uses.value;
 
@@ -32,6 +49,31 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     if (currentCharges <= 0) {
         await showReloadDialog(actor, item);
         return false;  // Prevent the item roll
+    }
+
+    // Handle misfire mechanic
+    const roll = workflow.attackRoll;
+    const hasDisadvantage = workflow.disadvantage;
+
+    if (roll.total === 1) {
+        if (hasDisadvantage) {
+            // If the attack was made with disadvantage and rolled a 1, the barrel cracks
+            ui.notifications.error(`${item.name} has misfired and the barrel has cracked! It is unusable until repaired.`);
+            await item.update({ "system.equipped": false }); // Unequip the item
+            ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor }),
+                content: `${actor.name}'s ${item.name} misfired and the barrel cracked! It requires a day of work with a gun kit or a use of *mending* to repair.`
+            });
+        } else {
+            // If no disadvantage, it's a regular misfire and needs to be cleared
+            ui.notifications.warn(`${item.name} misfired! Use an action to clear the barrel with a gun kit.`);
+            await item.update({ "system.uses.value": currentCharges - 1 }); // Decrement ammo as the shot is consumed
+            ChatMessage.create({
+                speaker: ChatMessage.getSpeaker({ actor }),
+                content: `${actor.name}'s ${item.name} misfired! The barrel must be cleared before it can be fired again.`
+            });
+        }
+        return false;  // Prevent the attack from proceeding
     }
 
     // Decrement the charge by 1 and allow the item roll to proceed
