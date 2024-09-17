@@ -3,7 +3,7 @@
   "title": "Firearm Charge Management",
   "description": "Handles firearm charge management and reloading in Foundry VTT mainly for the Zeistgeist adventure path.",
   "author": "Dustnite",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "minimumCoreVersion": "0.8.0",
   "compatibleCoreVersion": "12",
   "scripts": [

@@ -35,7 +35,7 @@ Hooks.on("midi-qol.preItemRoll", async (workflow) => {
     const actor = item.actor;
 
     // Check if the item has the firearm management flag set
-    const isFirearm = item.getFlag("firearm-charge-management", "isFirearm");
+    const isFirearm = foundry.utils.getProperty(item.flags, "firearm-charge-management.isFirearm"); // Changed to foundry.utils.getProperty
     if (!isFirearm) return true;
 
     // Debug: Log weapon details and the roll state
